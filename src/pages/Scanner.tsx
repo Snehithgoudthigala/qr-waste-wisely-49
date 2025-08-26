@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QrCode, Scan, History, Leaf } from "lucide-react";
+import { QrCode, Scan, History, Leaf, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { QRScanner } from "@/components/QRScanner";
 import { ProductResult } from "@/components/ProductResult";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +11,7 @@ const Scanner = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<any>(null);
   const { toast } = useToast();
+  const { signOut, user } = useAuth();
 
   const handleScan = (data: string) => {
     // Simulate product recognition
@@ -37,6 +39,22 @@ const Scanner = () => {
     setScannedData(null);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account.",
+      });
+    } catch (error) {
+      toast({
+        title: "Sign out failed",
+        description: "An error occurred while signing out.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (scannedData) {
     return <ProductResult product={scannedData} onScanAnother={() => setScannedData(null)} />;
   }
@@ -49,14 +67,27 @@ const Scanner = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-eco-accent/5 to-eco-secondary/10">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
           <div className="flex items-center justify-center mb-4">
             <div className="bg-gradient-to-r from-eco-primary to-eco-secondary p-3 rounded-full shadow-lg">
               <Leaf className="h-8 w-8 text-white" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Waste Wise</h1>
-          <p className="text-muted-foreground">Smart waste segregation through QR scanning</p>
+          <p className="text-muted-foreground">
+            Welcome back, {user?.email?.split('@')[0]}! Smart waste segregation through QR scanning
+          </p>
         </div>
 
         {/* Main Scanner Card */}
